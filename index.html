@@ -3,41 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://cdn.jim-nielsen.com/ios/512/weather-2021-12-07.png?rf=1024">
     <title>Weather App</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #bac2df;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
+            margin: 10;
         }
         .weather-app {
             background: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             text-align: center;
         }
         #weather-result {
             margin-top: 20px;
-        }  
+        }
+        p b {
+            padding: 2px;
+        }
     </style>
 </head>
 <body>
     <div class="weather-app">
         <h1>Weather App</h1>
         <hr>
+        <p id="status">Getting your location...</p>
         <div id="weather-result">
-           
+        
         </div>
     </div>
     <script>
         function getLocation() {
             if (navigator.geolocation) {
-              navigator.geolocation.watchPosition(showPosition);
+              navigator.geolocation.watchPosition(showPosition, showError, { enableHighAccuracy: true });
           
             } else {
               x.innerHTML = "Geolocation is not supported by this browser.";
@@ -49,9 +54,24 @@
              const long = position.coords.longitude;
              getWeather(lat,long);
           }
-          
+          function showError(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    document.getElementById("status").innerHTML = "User denied the request for Geolocation.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    document.getElementById("status").innerHTML = "Location information is unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    document.getElementById("status").innerHTML = "The request to get user location timed out.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    document.getElementById("status").innerHTML = "An unknown error occurred.";
+                    break;
+              }
+           }
           async function getWeather(lat,lon) {
-              const apiKey = '0b458f3e482048c2886122139230608'; 
+              const apiKey = "7660a0cb670a400598d172712241307"; 
               const url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${lat},${lon}`;
           
               try {
@@ -59,7 +79,7 @@
                   const data = await response.json();
                   
                   if (response.ok) {
-                      displayWeather(data);
+                      displayWeather(data,lat,lon);
                   } else {
                       document.getElementById('weather-result').innerHTML = `<p>${data.error.message}</p>`;
                   }
@@ -69,26 +89,40 @@
               }
           }
           
-          function displayWeather(data) {
+          function displayWeather(data,lat,lon) {
               const weatherContainer = document.getElementById('weather-result');
-              
+              let old_date = data.location.localtime;
+              let year = old_date.slice(0,4);
+              let month = old_date.slice(5,7);
+              let date = old_date.slice(8,10);
+              let hour = old_date.slice(11,13);
+              let minute = old_date.slice(14,17);
+              var anot = 'AM';
+              if (hour>12){
+                hour -= 12;
+                anot = 'PM';
+              }
+              const new_date = date +'-'+ month +'-' + year + ' '+hour +':'+minute+' '+anot;
               const weatherInfo = `
                   <h2>${data.location.name}, ${data.location.region}, ${data.location.country}</h2>
-                  <p>Local Time: ${data.location.localtime}</p>
-                  <p>Temperature: ${data.current.temp_c} °C / ${data.current.temp_f} °F</p>
-                  <p>Condition: ${data.current.condition.text}</p>
-                  <img src="${data.current.condition.icon}" alt="${data.current.condition.text}">
-                  <p>Humidity: ${data.current.humidity}%</p>
-                  <p>Wind: ${data.current.wind_kph} kph / ${data.current.wind_mph} mph (${data.current.wind_dir})</p>
-                  <p>Pressure: ${data.current.pressure_mb} mb / ${data.current.pressure_in} in</p>
-                  <p>Precipitation: ${data.current.precip_mm} mm / ${data.current.precip_in} in</p>
-                  <p>Cloud Cover: ${data.current.cloud}%</p>
-                  <p>Feels Like: ${data.current.feelslike_c} °C / ${data.current.feelslike_f} °F</p>
-                  <p>Visibility: ${data.current.vis_km} km / ${data.current.vis_miles} miles</p>
-                  <p>UV Index: ${data.current.uv}</p>
-                  <p>Gust: ${data.current.gust_kph} kph / ${data.current.gust_mph} mph</p>
+                  <p><b>Local Time:</b> ${new_date}</p>
+                  <p><b>Latitude:</b> <u>${lat}</u></p>
+                  <p><b>Longitude:</b> <u>${lon}</u></p>
+                  <p><b>Temperature:</b> ${data.current.temp_c} °C / ${data.current.temp_f} °F</p>
+                  <p><b>Condition:</b> ${data.current.condition.text}</p>
+                  <img src="${data.current.condition.icon}" alt="${data.current.condition.text} height='60px' width='60px' ">
+                  <p><b>Humidity:</b> ${data.current.humidity}%</p>
+                  <p><b>Wind:</b> ${data.current.wind_kph} kph / ${data.current.wind_mph} mph (${data.current.wind_dir})</p>
+                  <p><b>Pressure:</b> ${data.current.pressure_mb} mb / ${data.current.pressure_in} in</p>
+                  <p><b>Precipitation:</b> ${data.current.precip_mm} mm / ${data.current.precip_in} in</p>
+                  <p><b>Cloud Cover:</b> ${data.current.cloud}%</p>
+                  <p><b>Feels Like:</b> ${data.current.feelslike_c} °C / ${data.current.feelslike_f} °F</p>
+                  <p><b>Visibility:</b> ${data.current.vis_km} km / ${data.current.vis_miles} miles</p>
+                  <p><b>UV Index:</b> ${data.current.uv}</p>
+                  <p><b>Gust:</b> ${data.current.gust_kph} kph / ${data.current.gust_mph} mph</p>
               `;
               weatherContainer.innerHTML = weatherInfo;
+              document.getElementById("status").innerHTML = "";
           }
         
         getLocation(); 
