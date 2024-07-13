@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .weather-app {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        #weather-result {
+            margin-top: 20px;
+        }  
+    </style>
+</head>
+<body>
+    <div class="weather-app">
+        <h1>Weather App</h1>
+        <hr>
+        <div id="weather-result">
+           
+        </div>
+    </div>
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+              navigator.geolocation.watchPosition(showPosition);
+          
+            } else {
+              x.innerHTML = "Geolocation is not supported by this browser.";
+            }
+          }
+          
+          function showPosition(position) {
+             const lat = position.coords.latitude;
+             const long = position.coords.longitude;
+             getWeather(lat,long);
+          }
+          
+          async function getWeather(lat,lon) {
+              const apiKey = '0b458f3e482048c2886122139230608'; 
+              const url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${lat},${lon}`;
+          
+              try {
+                  const response = await fetch(url);
+                  const data = await response.json();
+                  
+                  if (response.ok) {
+                      displayWeather(data);
+                  } else {
+                      document.getElementById('weather-result').innerHTML = `<p>${data.error.message}</p>`;
+                  }
+              } catch (error) {
+                  console.error('Error fetching weather data:', error);
+                  document.getElementById('weather-result').innerHTML = `<p>Error fetching weather data</p>`;
+              }
+          }
+          
+          function displayWeather(data) {
+              const weatherContainer = document.getElementById('weather-result');
+              
+              const weatherInfo = `
+                  <h2>${data.location.name}, ${data.location.region}, ${data.location.country}</h2>
+                  <p>Local Time: ${data.location.localtime}</p>
+                  <p>Temperature: ${data.current.temp_c} °C / ${data.current.temp_f} °F</p>
+                  <p>Condition: ${data.current.condition.text}</p>
+                  <img src="${data.current.condition.icon}" alt="${data.current.condition.text}">
+                  <p>Humidity: ${data.current.humidity}%</p>
+                  <p>Wind: ${data.current.wind_kph} kph / ${data.current.wind_mph} mph (${data.current.wind_dir})</p>
+                  <p>Pressure: ${data.current.pressure_mb} mb / ${data.current.pressure_in} in</p>
+                  <p>Precipitation: ${data.current.precip_mm} mm / ${data.current.precip_in} in</p>
+                  <p>Cloud Cover: ${data.current.cloud}%</p>
+                  <p>Feels Like: ${data.current.feelslike_c} °C / ${data.current.feelslike_f} °F</p>
+                  <p>Visibility: ${data.current.vis_km} km / ${data.current.vis_miles} miles</p>
+                  <p>UV Index: ${data.current.uv}</p>
+                  <p>Gust: ${data.current.gust_kph} kph / ${data.current.gust_mph} mph</p>
+              `;
+              weatherContainer.innerHTML = weatherInfo;
+          }
+        
+        getLocation(); 
+    </script>
+</body>
+</html>
