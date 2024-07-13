@@ -91,7 +91,7 @@
           
           function displayWeather(data,lat,lon) {
               const weatherContainer = document.getElementById('weather-result');
-              let old_date = data.location.localtime;
+              let old_date = data.current.last_updated;
               let year = old_date.slice(0,4);
               let month = old_date.slice(5,7);
               let date = old_date.slice(8,10);
